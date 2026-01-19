@@ -26,6 +26,20 @@ const AdminApp: React.FC = () => {
     }
   }, []);
 
+  // 同步更新瀏覽器分頁標題與 Favicon
+  useEffect(() => {
+    document.title = `${config.siteName} - 後台管理`;
+    if (config.customIcon) {
+      let link: HTMLLinkElement | null = document.querySelector("link[rel~='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = config.customIcon;
+    }
+  }, [config.siteName, config.customIcon]);
+
   const handleSave = () => {
     localStorage.setItem('dream_cloud_site_config', JSON.stringify(config));
     // 同步舊有的 gas_url 鍵值以確保相容性

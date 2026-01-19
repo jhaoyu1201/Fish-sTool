@@ -65,7 +65,6 @@ const App: React.FC = () => {
   const uploadToCloud = async () => {
     if (!config.gasUrl) return addToast('未設定雲端網址，請前往後台設定', 'error');
     try {
-      // 使用 no-cors 是因為 GAS 轉址特性
       await fetch(config.gasUrl, {
         method: 'POST',
         mode: 'no-cors',
@@ -90,7 +89,6 @@ const App: React.FC = () => {
     if (savedConfigStr) {
       const savedConfig: SiteConfig = JSON.parse(savedConfigStr);
       setConfig(savedConfig);
-      // 如果有網址，執行自動同步 (靜默模式)
       if (savedConfig.gasUrl) {
         syncFromCloud(savedConfig.gasUrl, true);
       }
@@ -98,6 +96,23 @@ const App: React.FC = () => {
 
     hasInitialized.current = true;
   }, [syncFromCloud]);
+
+  // 同步更新瀏覽器分頁標題與 Favicon
+  useEffect(() => {
+    // 更新標題
+    document.title = config.siteName;
+
+    // 更新 Favicon
+    if (config.customIcon) {
+      let link: HTMLLinkElement | null = document.querySelector("link[rel~='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = config.customIcon;
+    }
+  }, [config.siteName, config.customIcon]);
 
   // 播放音效
   const playSound = useCallback(() => {
@@ -108,7 +123,6 @@ const App: React.FC = () => {
     }
   }, [config.clickSound]);
 
-  // 包裝操作以觸發音效
   const wrap = (fn: (...args: any[]) => void) => (...args: any[]) => {
     playSound();
     fn(...args);
@@ -127,8 +141,8 @@ const App: React.FC = () => {
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
       {/* Header */}
-      <header className="flex flex-col items-center mb-10">
-        <div className="flex items-center gap-4 mb-3">
+      <header className="flex justify-between items-start mb-10">
+        <div className="flex items-center gap-4">
           <div className="w-16 h-16 bg-white/40 p-2 rounded-2xl shadow-sm backdrop-blur-md flex items-center justify-center overflow-hidden border border-white/50">
             {config.customIcon ? (
               <img src={config.customIcon} alt="Icon" className="w-full h-full object-cover rounded-lg" />
@@ -203,7 +217,7 @@ const App: React.FC = () => {
           <textarea readOnly value={outputText} className="w-full h-44 bg-transparent border-none focus:ring-0 text-lg leading-relaxed no-scrollbar resize-none cursor-default" placeholder="轉換後的內容將顯示於此..." />
         </section>
 
-        {/* 智慧補丁系統 - UI 已簡化 */}
+        {/* 智慧補丁系統 */}
         <section className="glass-panel rounded-[1.5rem] overflow-hidden shadow-lg border border-white/20">
           <details className="group" open>
             <summary className="flex items-center justify-between p-4 cursor-pointer hover:bg-white/30 transition-colors list-none">
