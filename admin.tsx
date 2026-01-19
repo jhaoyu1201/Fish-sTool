@@ -17,7 +17,13 @@ const AdminApp: React.FC = () => {
 
   useEffect(() => {
     const saved = localStorage.getItem('dream_cloud_site_config');
-    if (saved) setConfig({ ...DEFAULT_CONFIG, ...JSON.parse(saved) });
+    if (saved) {
+      try {
+        setConfig({ ...DEFAULT_CONFIG, ...JSON.parse(saved) });
+      } catch (e) {
+        console.error("Failed to parse saved config", e);
+      }
+    }
   }, []);
 
   const handleSave = () => {
@@ -88,7 +94,7 @@ const AdminApp: React.FC = () => {
               <label className="text-sm font-bold text-slate-500 uppercase">自訂品牌 ICON</label>
               <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
                 <div className="w-16 h-16 bg-white rounded-xl shadow-sm overflow-hidden flex items-center justify-center">
-                  {config.customIcon ? <img src={config.customIcon} className="w-full h-full object-cover" /> : <span className="text-2xl">☁️</span>}
+                  {config.customIcon ? <img src={config.customIcon} className="w-full h-full object-cover" alt="Custom Icon" /> : <span className="text-2xl">☁️</span>}
                 </div>
                 <input type="file" accept="image/*" onChange={e => handleFileUpload('icon', e)} className="text-xs" />
               </div>
@@ -117,5 +123,8 @@ const AdminApp: React.FC = () => {
   );
 };
 
-const root = ReactDOM.createRoot(document.getElementById('admin-root')!);
-root.render(<AdminApp />);
+const rootElement = document.getElementById('admin-root');
+if (rootElement) {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(<AdminApp />);
+}

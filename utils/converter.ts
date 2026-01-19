@@ -1,8 +1,17 @@
 
 import { ConversionType, PatchRule } from '../types';
 
-// 宣告全域 OpenCC (來自 CDN)
-declare const OpenCC: any;
+/**
+ * 宣告全域 OpenCC (來自 CDN 的 UMD 版本)
+ */
+declare global {
+  interface Window {
+    OpenCC: any;
+  }
+}
+
+// 獲取全域變數
+const getOpenCC = () => (window as any).OpenCC || (globalThis as any).OpenCC;
 
 /**
  * 轉義正則表達式中的特殊字符
@@ -45,9 +54,13 @@ export const applyCustomPatches = (text: string, patchRules: PatchRule[]): strin
 export const convertText = async (text: string, type: ConversionType): Promise<string> => {
   if (!text) return '';
   
-  // 這裡使用 OpenCC.js
-  // tw -> cn: 繁體(台灣) 轉 簡體
-  // cn -> tw: 簡體 轉 繁體(台灣)
+  const OpenCC = getOpenCC();
+  if (!OpenCC) {
+    console.warn('OpenCC library not found, skipping conversion.');
+    return text;
+  }
+
+  // 使用 OpenCC.js 核心轉換邏輯
   const converter = OpenCC.Converter({ 
     from: type === ConversionType.TO_SIMPLIFIED ? 'tw' : 'cn', 
     to: type === ConversionType.TO_SIMPLIFIED ? 'cn' : 'tw' 
